@@ -1,4 +1,5 @@
 import os
+import gdown
 from flask import Flask, request, render_template, jsonify
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
@@ -8,7 +9,17 @@ import cv2
 app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-model = load_model(os.path.join(BASE_DIR, "new_model.keras"))
+MODEL_PATH = os.path.join(BASE_DIR, "new_model.keras")
+
+if not os.path.exists(MODEL_PATH):
+    print("Downloading model from Google Drive...")
+    gdown.download(
+        "https://drive.google.com/uc?id=1wWcrLJQ4gsC2ACf-TnQDPqvTB2dEiaMR",
+        MODEL_PATH,
+        quiet=False
+    )
+
+model = load_model(MODEL_PATH)
 
 IMAGE_SIZE = (224, 224)
 
@@ -100,4 +111,5 @@ def predict():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000, debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port, debug=False)
