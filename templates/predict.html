@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PomeloSense | Disease Detection</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green-deep: #0d3b2e;
+  --green-mid: #1a6b50;
+  --green-light: #2ca882;
+  --cream: #f8f3ec;
+  --gold: #c9a84c;
+  --text: #1c1c1c;
+  --muted: #6b7280;
+  --white: #ffffff;
+  --danger: #dc4a2a;
+  --success: #2ca882;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  background: var(--green-deep);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── NAV ── */
+nav {
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(16px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 56px;
+  border-bottom: 1px solid rgba(201,168,76,0.15);
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  nav { padding: 0 40px; height: 60px; }
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.nav-logo-icon {
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(135deg, var(--green-light), var(--gold));
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.nav-logo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.nav-back {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) { .nav-back { font-size: 13px; } }
+.nav-back:hover { color: var(--white); }
+
+/* ── MAIN LAYOUT ── */
+main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+@media (min-width: 768px) {
+  main { grid-template-columns: 1fr 1fr; padding: 40px 24px; }
+}
+
+/* ── LEFT PANEL ── */
+.panel-left { margin-bottom: 32px; }
+
+@media (min-width: 768px) {
+  .panel-left { padding-right: 40px; margin-bottom: 0; }
+}
+
+.panel-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+@media (min-width: 768px) { .panel-label { font-size: 11px; margin-bottom: 10px; } }
+
+.panel-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(26px, 7vw, 44px);
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 8px;
+  color: var(--white);
+}
+
+.panel-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+@media (min-width: 768px) { .panel-sub { font-size: 14px; margin-bottom: 36px; } }
+
+/* ── UPLOAD ZONE ── */
+.upload-zone {
+  border: 2px dashed rgba(44,168,130,0.3);
+  border-radius: 18px;
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(44,168,130,0.04);
+  position: relative;
+  margin-bottom: 14px;
+  touch-action: manipulation;
+}
+
+@media (min-width: 768px) {
+  .upload-zone { border-radius: 20px; padding: 36px 24px; margin-bottom: 16px; }
+}
+
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--green-light);
+  background: rgba(44,168,130,0.08);
+}
+
+.upload-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.upload-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(44,168,130,0.12);
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  margin: 0 auto 12px;
+}
+
+.upload-zone h3 { font-size: 15px; font-weight: 600; margin-bottom: 5px; }
+.upload-zone p  { font-size: 13px; color: rgba(255,255,255,0.45); }
+
+.upload-zone .file-types {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.file-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 20px;
+  color: rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  color: rgba(255,255,255,0.3);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.or-divider::before, .or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+}
+
+.btn-camera {
+  width: 100%;
+  padding: 14px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  color: rgba(255,255,255,0.7);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s;
+  margin-bottom: 16px;
+  touch-action: manipulation;
+}
+
+.btn-camera:hover, .btn-camera:active {
+  background: rgba(255,255,255,0.09);
+  color: var(--white);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.btn-detect {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--green-mid), var(--green-light));
+  border: none;
+  border-radius: 14px;
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+  box-shadow: 0 8px 24px rgba(44,168,130,0.2);
+  letter-spacing: 0.3px;
+  touch-action: manipulation;
+}
+
+.btn-detect:hover:not(:disabled), .btn-detect:active:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(44,168,130,0.35);
+}
+
+.btn-detect:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── RIGHT PANEL ── */
+.panel-right {
+  padding-left: 0;
+  border-left: none;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .panel-right {
+    padding-left: 40px;
+    border-left: 1px solid rgba(255,255,255,0.07);
+    border-top: none;
+    padding-top: 0;
+  }
+}
+
+/* Preview */
+.preview-container {
+  aspect-ratio: 1;
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 16px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  flex-shrink: 0;
+  max-height: 320px;
+}
+
+@media (min-width: 768px) {
+  .preview-container { border-radius: 20px; margin-bottom: 20px; max-height: none; }
+}
+
+.preview-container img, .preview-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.preview-placeholder { text-align: center; color: rgba(255,255,255,0.2); }
+.preview-placeholder .ph-icon { font-size: 40px; margin-bottom: 8px; }
+.preview-placeholder p { font-size: 12px; }
+
+/* Scan overlay */
+.scan-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: none;
+}
+
+.scan-overlay.active { display: block; }
+
+.scan-corner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--green-light);
+  position: absolute;
+}
+
+.sc-tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+.sc-tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+.sc-bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+.sc-br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+.scan-line-anim {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--green-light), transparent);
+  box-shadow: 0 0 12px var(--green-light);
+  animation: scanMove 1.8s linear infinite;
+}
+
+@keyframes scanMove { from { top: 0; } to { top: 100%; } }
+
+/* ── RESULT CARD ── */
+.result-card {
+  border-radius: 16px;
+  padding: 20px;
+  flex: 1;
+  transition: all 0.4s ease;
+}
+
+@media (min-width: 768px) { .result-card { border-radius: 18px; padding: 24px; } }
+
+.result-card.idle {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  min-height: 100px;
+}
+
+.result-card.idle .idle-icon { font-size: 28px; }
+.result-card.idle p { font-size: 13px; color: rgba(255,255,255,0.3); }
+
+.result-card.loading {
+  background: rgba(44,168,130,0.06);
+  border: 1px solid rgba(44,168,130,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 100px;
+}
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(44,168,130,0.3);
+  border-top-color: var(--green-light);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.result-card.success {
+  background: rgba(44,168,130,0.06);
+  border: 1px solid rgba(44,168,130,0.25);
+  animation: fadeSlide 0.5s ease;
+}
+
+.result-card.error {
+  background: rgba(220,74,42,0.06);
+  border: 1px solid rgba(220,74,42,0.25);
+  animation: fadeSlide 0.5s ease;
+}
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.result-label {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--green-light);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.result-disease-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(20px, 5vw, 28px);
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.confidence-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.confidence-bar-wrap {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.confidence-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green-mid), var(--green-light));
+  border-radius: 2px;
+  transition: width 0.8s ease;
+}
+
+.confidence-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-light);
+  white-space: nowrap;
+}
+
+/* suggestion boxes */
+.suggestion-box {
+  background: rgba(0,0,0,0.2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.7;
+  border: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 10px;
+}
+
+.suggestion-box:last-child { margin-bottom: 0; }
+
+.suggestion-box strong {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.suggestion-box.en strong { color: var(--gold); }
+.suggestion-box.ta strong { color: var(--green-light); }
+
+.suggestion-box.ta {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 13px;
+}
+
+/* ── CAMERA MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: none;
+  place-items: center;
+  padding: 16px;
+}
+
+.modal-overlay.open { display: grid; }
+
+.modal-box {
+  background: #0f2f25;
+  border: 1px solid rgba(44,168,130,0.2);
+  border-radius: 20px;
+  padding: 20px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  animation: fadeSlide 0.3s ease;
+}
+
+@media (min-width: 768px) { .modal-box { padding: 28px; } }
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.modal-header h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.modal-close {
+  background: rgba(255,255,255,0.08);
+  border: none;
+  color: rgba(255,255,255,0.6);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+  transition: 0.2s;
+  flex-shrink: 0;
+  touch-action: manipulation;
+}
+
+.modal-close:hover { background: rgba(255,255,255,0.14); color: white; }
+
+/* camera status message */
+.cam-status {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  margin-bottom: 10px;
+  min-height: 18px;
+}
+
+.modal-video-wrap {
+  aspect-ratio: 4/3;
+  background: #000;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-video-wrap video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.btn-capture {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--green-mid), var(--green-light));
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s;
+  touch-action: manipulation;
+}
+
+.btn-capture:hover, .btn-capture:active { filter: brightness(1.1); }
+.btn-capture:disabled { opacity: 0.4; cursor: not-allowed; }
+
+canvas { display: none; }
+</style>
+<!-- Load Tamil font for suggestion box -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-icon">🌿</div>
+    <span class="nav-logo-text">PomeloSense</span>
+  </a>
+  <a class="nav-back" href="/">← Back to Guide</a>
+</nav>
+
+<main>
+  <!-- LEFT -->
+  <div class="panel-left">
+    <p class="panel-label">AI Diagnostics</p>
+    <h1 class="panel-title">Disease Detection</h1>
+    <p class="panel-sub">Upload a clear image of a pomelo leaf. Our model will identify the disease and suggest treatment in English and Tamil.</p>
+
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])">
+      <div class="upload-icon">🍃</div>
+      <h3>Drop leaf image here</h3>
+      <p>or tap to browse / take photo</p>
+      <div class="file-types">
+        <span class="file-tag">JPG</span>
+        <span class="file-tag">PNG</span>
+        <span class="file-tag">WEBP</span>
+      </div>
+    </div>
+
+    <div class="or-divider">or</div>
+
+    <button class="btn-camera" onclick="openCamera()">
+      📷 Use Live Camera
+    </button>
+
+    <button class="btn-detect" id="detectBtn" onclick="submitDetection()" disabled>
+      🔍 Analyse Leaf
+    </button>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="panel-right">
+    <div class="preview-container" id="previewContainer">
+      <img id="previewImg" alt="Leaf preview">
+
+      <div class="scan-overlay" id="scanOverlay">
+        <div class="scan-corner sc-tl"></div>
+        <div class="scan-corner sc-tr"></div>
+        <div class="scan-corner sc-bl"></div>
+        <div class="scan-corner sc-br"></div>
+        <div class="scan-line-anim"></div>
+      </div>
+
+      <div class="preview-placeholder" id="previewPlaceholder">
+        <div class="ph-icon">🌿</div>
+        <p>Leaf image will appear here</p>
+      </div>
+    </div>
+
+    <div class="result-card idle" id="resultCard">
+      <div class="idle-icon">💡</div>
+      <p>Upload a leaf image to begin diagnosis</p>
+    </div>
+  </div>
+</main>
+
+<!-- Camera Modal -->
+<div class="modal-overlay" id="cameraModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Capture Leaf</h3>
+      <button class="modal-close" onclick="closeCamera()">✕</button>
+    </div>
+    <p class="cam-status" id="camStatus">Starting camera…</p>
+    <div class="modal-video-wrap">
+      <!-- muted is required on iOS/Android for autoplay -->
+      <video id="camVideo" autoplay playsinline muted></video>
+    </div>
+    <button class="btn-capture" id="captureBtn" onclick="captureFromCamera()" disabled>
+      📸 Capture Photo
+    </button>
+  </div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+let selectedFile = null;
+let cameraStream = null;
+
+/* ─── File Upload ─── */
+function handleFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('previewImg');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('previewPlaceholder').style.display = 'none';
+    document.getElementById('detectBtn').disabled = false;
+    resetResult();
+  };
+  reader.readAsDataURL(file);
+}
+
+/* Drag & drop */
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  handleFile(e.dataTransfer.files[0]);
+});
+
+/* ─── Camera ─── */
+function openCamera() {
+  document.getElementById('cameraModal').classList.add('open');
+  document.getElementById('camStatus').textContent = 'Starting camera…';
+  document.getElementById('captureBtn').disabled = true;
+
+  // Detect mobile: prefer rear camera; on desktop: use any available camera
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
+  const constraints = isMobile
+    ? { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } }
+    : { video: { width: { ideal: 1280 }, height: { ideal: 720 } } };
+
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(stream => {
+      cameraStream = stream;
+      const video = document.getElementById('camVideo');
+      video.srcObject = stream;
+      video.onloadedmetadata = () => {
+        video.play();
+        document.getElementById('camStatus').textContent = 'Camera ready — point at the leaf';
+        document.getElementById('captureBtn').disabled = false;
+      };
+    })
+    .catch(err => {
+      // Fallback: try with minimal constraints
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          cameraStream = stream;
+          const video = document.getElementById('camVideo');
+          video.srcObject = stream;
+          video.onloadedmetadata = () => {
+            video.play();
+            document.getElementById('camStatus').textContent = 'Camera ready';
+            document.getElementById('captureBtn').disabled = false;
+          };
+        })
+        .catch(err2 => {
+          document.getElementById('camStatus').textContent = '❌ Camera blocked — check browser permissions';
+          console.error('Camera error:', err2.message);
+        });
+    });
+}
+
+function closeCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  document.getElementById('camVideo').srcObject = null;
+  document.getElementById('cameraModal').classList.remove('open');
+}
+
+function captureFromCamera() {
+  const video  = document.getElementById('camVideo');
+  const canvas = document.getElementById('canvas');
+
+  canvas.width  = video.videoWidth  || 640;
+  canvas.height = video.videoHeight || 480;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+
+  canvas.toBlob(blob => {
+    selectedFile = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
+    const img = document.getElementById('previewImg');
+    img.src = canvas.toDataURL('image/jpeg');
+    img.style.display = 'block';
+    document.getElementById('previewPlaceholder').style.display = 'none';
+    document.getElementById('detectBtn').disabled = false;
+    closeCamera();
+    resetResult();
+  }, 'image/jpeg', 0.92);
+}
+
+/* ─── Detection ─── */
+function resetResult() {
+  const card = document.getElementById('resultCard');
+  card.className = 'result-card idle';
+  card.innerHTML = '<div class="idle-icon">💡</div><p>Click Analyse Leaf to run detection</p>';
+}
+
+async function submitDetection() {
+  if (!selectedFile) return;
+
+  const card    = document.getElementById('resultCard');
+  const overlay = document.getElementById('scanOverlay');
+
+  card.className = 'result-card loading';
+  card.innerHTML = '<div class="spinner"></div><span style="font-size:14px;color:rgba(255,255,255,0.6)">Analysing leaf pattern…</span>';
+  overlay.classList.add('active');
+  document.getElementById('detectBtn').disabled = true;
+
+  const formData = new FormData();
+  formData.append('image', selectedFile);
+
+  try {
+    const res  = await fetch('/predict', { method: 'POST', body: formData });
+    const data = await res.json();
+    overlay.classList.remove('active');
+
+    if (data.error) {
+      card.className = 'result-card error';
+      card.innerHTML = `
+        <div class="result-label">Error</div>
+        <p style="color:rgba(255,255,255,0.6);font-size:14px;">${data.error}</p>`;
+      return;
+    }
+
+    // ✅ Use correct key names that match app.py
+    const name       = data.class.replace(/_/g, ' ');
+    const conf       = data.confidence;
+    const suggEn     = data.suggestion_en || 'No suggestion available.';
+    const suggTa     = data.suggestion_ta || 'தகவல் இல்லை.';
+
+    card.className = 'result-card success';
+    card.innerHTML = `
+      <div class="result-label">Detection Result</div>
+      <div class="result-disease-name">${name}</div>
+      <div class="confidence-row">
+        <div class="confidence-bar-wrap">
+          <div class="confidence-bar" id="confBar" style="width:0%"></div>
+        </div>
+        <span class="confidence-val">${conf}%</span>
+      </div>
+      <div class="suggestion-box en">
+        <strong>🇬🇧 Treatment (English)</strong>
+        ${suggEn}
+      </div>
+      <div class="suggestion-box ta">
+        <strong>🇮🇳 சிகிச்சை (தமிழ்)</strong>
+        ${suggTa}
+      </div>`;
+
+    // Animate confidence bar
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const bar = document.getElementById('confBar');
+      if (bar) bar.style.width = conf + '%';
+    }));
+
+  } catch (err) {
+    overlay.classList.remove('active');
+    card.className = 'result-card error';
+    card.innerHTML = `
+      <div class="result-label">Connection Error</div>
+      <p style="color:rgba(255,255,255,0.6);font-size:14px;">Could not reach server. Please try again.</p>`;
+  } finally {
+    document.getElementById('detectBtn').disabled = false;
+  }
+}
+</script>
+
+</body>
+</html>
