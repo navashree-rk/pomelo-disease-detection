@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 
 app = Flask(__name__)
-model = load_model("plant_disease_model.h5")
+model = load_model("plant_disease_model.h5", compile=False)
 
 IMAGE_SIZE = (224, 224)
 
