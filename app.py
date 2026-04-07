@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, render_template, jsonify
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
@@ -5,7 +6,9 @@ import numpy as np
 import cv2
 
 app = Flask(__name__)
-model = load_model("new_model.keras")
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model = load_model(os.path.join(BASE_DIR, "new_model.keras"))
 
 IMAGE_SIZE = (224, 224)
 
@@ -91,8 +94,8 @@ def predict():
     return jsonify({
         "class": predicted_class,
         "confidence": confidence,
-        "suggestion_en": suggestion_en,   # ✅ key names match predict.html
-        "suggestion_ta": suggestion_ta    # ✅ key names match predict.html
+        "suggestion_en": suggestion_en,
+        "suggestion_ta": suggestion_ta
     })
 
 
